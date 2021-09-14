@@ -1,6 +1,6 @@
 import { IUser } from 'app/entities/user/user.model';
-import { IAppointment } from 'app/entities/appointment/appointment.model';
 import { IAgency } from 'app/entities/agency/agency.model';
+import { IAppointment } from 'app/entities/appointment/appointment.model';
 import { Gender } from 'app/entities/enumerations/gender.model';
 
 export interface IAdvisor {
@@ -8,8 +8,8 @@ export interface IAdvisor {
   gender?: Gender | null;
   telephone?: string;
   user?: IUser;
-  appointments?: IAppointment[] | null;
   agency?: IAgency | null;
+  appointments?: IAppointment[] | null;
 }
 
 export class Advisor implements IAdvisor {
@@ -18,8 +18,8 @@ export class Advisor implements IAdvisor {
     public gender?: Gender | null,
     public telephone?: string,
     public user?: IUser,
-    public appointments?: IAppointment[] | null,
-    public agency?: IAgency | null
+    public agency?: IAgency | null,
+    public appointments?: IAppointment[] | null
   ) {}
 }
 

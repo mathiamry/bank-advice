@@ -63,9 +63,9 @@
     }
   ],
   "entityTableName": "appointment",
-  "dto": "no",
+  "dto": "mapstruct",
   "pagination": "pagination",
-  "service": "no",
+  "service": "serviceClass",
   "jpaMetamodelFiltering": false,
   "fluentMethods": true,
   "readOnly": false,

@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.baamtu.atelier.bank.IntegrationTest;
 import com.baamtu.atelier.bank.domain.Agency;
 import com.baamtu.atelier.bank.repository.AgencyRepository;
+import com.baamtu.atelier.bank.service.dto.AgencyDTO;
+import com.baamtu.atelier.bank.service.mapper.AgencyMapper;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -51,6 +53,9 @@ class AgencyResourceIT {
     private AgencyRepository agencyRepository;
 
     @Autowired
+    private AgencyMapper agencyMapper;
+
+    @Autowired
     private EntityManager em;
 
     @Autowired
@@ -90,8 +95,9 @@ class AgencyResourceIT {
     void createAgency() throws Exception {
         int databaseSizeBeforeCreate = agencyRepository.findAll().size();
         // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
         restAgencyMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agencyDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Agency in the database
@@ -109,12 +115,13 @@ class AgencyResourceIT {
     void createAgencyWithExistingId() throws Exception {
         // Create the Agency with an existing ID
         agency.setId(1L);
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
 
         int databaseSizeBeforeCreate = agencyRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAgencyMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agencyDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Agency in the database
@@ -130,9 +137,10 @@ class AgencyResourceIT {
         agency.setName(null);
 
         // Create the Agency, which fails.
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
 
         restAgencyMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agencyDTO)))
             .andExpect(status().isBadRequest());
 
         List<Agency> agencyList = agencyRepository.findAll();
@@ -147,9 +155,10 @@ class AgencyResourceIT {
         agency.setAddress(null);
 
         // Create the Agency, which fails.
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
 
         restAgencyMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agencyDTO)))
             .andExpect(status().isBadRequest());
 
         List<Agency> agencyList = agencyRepository.findAll();
@@ -164,9 +173,10 @@ class AgencyResourceIT {
         agency.setEmail(null);
 
         // Create the Agency, which fails.
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
 
         restAgencyMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agencyDTO)))
             .andExpect(status().isBadRequest());
 
         List<Agency> agencyList = agencyRepository.findAll();
@@ -229,12 +239,13 @@ class AgencyResourceIT {
         // Disconnect from session so that the updates on updatedAgency are not directly saved in db
         em.detach(updatedAgency);
         updatedAgency.name(UPDATED_NAME).address(UPDATED_ADDRESS).contact(UPDATED_CONTACT).email(UPDATED_EMAIL);
+        AgencyDTO agencyDTO = agencyMapper.toDto(updatedAgency);
 
         restAgencyMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedAgency.getId())
+                put(ENTITY_API_URL_ID, agencyDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedAgency))
+                    .content(TestUtil.convertObjectToJsonBytes(agencyDTO))
             )
             .andExpect(status().isOk());
 
@@ -254,12 +265,15 @@ class AgencyResourceIT {
         int databaseSizeBeforeUpdate = agencyRepository.findAll().size();
         agency.setId(count.incrementAndGet());
 
+        // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAgencyMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, agency.getId())
+                put(ENTITY_API_URL_ID, agencyDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(agency))
+                    .content(TestUtil.convertObjectToJsonBytes(agencyDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -274,12 +288,15 @@ class AgencyResourceIT {
         int databaseSizeBeforeUpdate = agencyRepository.findAll().size();
         agency.setId(count.incrementAndGet());
 
+        // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgencyMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(agency))
+                    .content(TestUtil.convertObjectToJsonBytes(agencyDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -294,9 +311,12 @@ class AgencyResourceIT {
         int databaseSizeBeforeUpdate = agencyRepository.findAll().size();
         agency.setId(count.incrementAndGet());
 
+        // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgencyMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(agencyDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Agency in the database
@@ -374,12 +394,15 @@ class AgencyResourceIT {
         int databaseSizeBeforeUpdate = agencyRepository.findAll().size();
         agency.setId(count.incrementAndGet());
 
+        // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAgencyMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, agency.getId())
+                patch(ENTITY_API_URL_ID, agencyDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(agency))
+                    .content(TestUtil.convertObjectToJsonBytes(agencyDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -394,12 +417,15 @@ class AgencyResourceIT {
         int databaseSizeBeforeUpdate = agencyRepository.findAll().size();
         agency.setId(count.incrementAndGet());
 
+        // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgencyMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(agency))
+                    .content(TestUtil.convertObjectToJsonBytes(agencyDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -414,9 +440,14 @@ class AgencyResourceIT {
         int databaseSizeBeforeUpdate = agencyRepository.findAll().size();
         agency.setId(count.incrementAndGet());
 
+        // Create the Agency
+        AgencyDTO agencyDTO = agencyMapper.toDto(agency);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAgencyMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(agency)))
+            .perform(
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(agencyDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Agency in the database

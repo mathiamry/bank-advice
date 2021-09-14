@@ -11,6 +11,8 @@ import com.baamtu.atelier.bank.domain.Appointment;
 import com.baamtu.atelier.bank.domain.Manager;
 import com.baamtu.atelier.bank.domain.enumeration.Status;
 import com.baamtu.atelier.bank.repository.AppointmentRepository;
+import com.baamtu.atelier.bank.service.dto.AppointmentDTO;
+import com.baamtu.atelier.bank.service.mapper.AppointmentMapper;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -71,6 +73,9 @@ class AppointmentResourceIT {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private AppointmentMapper appointmentMapper;
 
     @Autowired
     private EntityManager em;
@@ -170,8 +175,11 @@ class AppointmentResourceIT {
     void createAppointment() throws Exception {
         int databaseSizeBeforeCreate = appointmentRepository.findAll().size();
         // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isCreated());
 
         // Validate the Appointment in the database
@@ -194,12 +202,15 @@ class AppointmentResourceIT {
     void createAppointmentWithExistingId() throws Exception {
         // Create the Appointment with an existing ID
         appointment.setId(1L);
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
 
         int databaseSizeBeforeCreate = appointmentRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Appointment in the database
@@ -215,9 +226,12 @@ class AppointmentResourceIT {
         appointment.setCreated(null);
 
         // Create the Appointment, which fails.
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
 
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isBadRequest());
 
         List<Appointment> appointmentList = appointmentRepository.findAll();
@@ -232,9 +246,12 @@ class AppointmentResourceIT {
         appointment.setAppointementDate(null);
 
         // Create the Appointment, which fails.
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
 
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isBadRequest());
 
         List<Appointment> appointmentList = appointmentRepository.findAll();
@@ -249,9 +266,12 @@ class AppointmentResourceIT {
         appointment.setStartDate(null);
 
         // Create the Appointment, which fails.
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
 
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isBadRequest());
 
         List<Appointment> appointmentList = appointmentRepository.findAll();
@@ -266,9 +286,12 @@ class AppointmentResourceIT {
         appointment.setEndDate(null);
 
         // Create the Appointment, which fails.
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
 
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isBadRequest());
 
         List<Appointment> appointmentList = appointmentRepository.findAll();
@@ -283,9 +306,12 @@ class AppointmentResourceIT {
         appointment.setStatusChangeDate(null);
 
         // Create the Appointment, which fails.
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
 
         restAppointmentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
+            )
             .andExpect(status().isBadRequest());
 
         List<Appointment> appointmentList = appointmentRepository.findAll();
@@ -367,12 +393,13 @@ class AppointmentResourceIT {
             .status(UPDATED_STATUS)
             .statusChangeDate(UPDATED_STATUS_CHANGE_DATE)
             .commentary(UPDATED_COMMENTARY);
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(updatedAppointment);
 
         restAppointmentMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedAppointment.getId())
+                put(ENTITY_API_URL_ID, appointmentDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedAppointment))
+                    .content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
             )
             .andExpect(status().isOk());
 
@@ -397,12 +424,15 @@ class AppointmentResourceIT {
         int databaseSizeBeforeUpdate = appointmentRepository.findAll().size();
         appointment.setId(count.incrementAndGet());
 
+        // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAppointmentMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, appointment.getId())
+                put(ENTITY_API_URL_ID, appointmentDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(appointment))
+                    .content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -417,12 +447,15 @@ class AppointmentResourceIT {
         int databaseSizeBeforeUpdate = appointmentRepository.findAll().size();
         appointment.setId(count.incrementAndGet());
 
+        // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAppointmentMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(appointment))
+                    .content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -437,9 +470,12 @@ class AppointmentResourceIT {
         int databaseSizeBeforeUpdate = appointmentRepository.findAll().size();
         appointment.setId(count.incrementAndGet());
 
+        // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAppointmentMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointment)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(appointmentDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Appointment in the database
@@ -541,12 +577,15 @@ class AppointmentResourceIT {
         int databaseSizeBeforeUpdate = appointmentRepository.findAll().size();
         appointment.setId(count.incrementAndGet());
 
+        // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAppointmentMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, appointment.getId())
+                patch(ENTITY_API_URL_ID, appointmentDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(appointment))
+                    .content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -561,12 +600,15 @@ class AppointmentResourceIT {
         int databaseSizeBeforeUpdate = appointmentRepository.findAll().size();
         appointment.setId(count.incrementAndGet());
 
+        // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAppointmentMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(appointment))
+                    .content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -581,10 +623,13 @@ class AppointmentResourceIT {
         int databaseSizeBeforeUpdate = appointmentRepository.findAll().size();
         appointment.setId(count.incrementAndGet());
 
+        // Create the Appointment
+        AppointmentDTO appointmentDTO = appointmentMapper.toDto(appointment);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAppointmentMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(appointment))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(appointmentDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 

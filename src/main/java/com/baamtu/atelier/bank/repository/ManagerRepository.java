@@ -9,4 +9,7 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ManagerRepository extends JpaRepository<Manager, Long> {}
+public interface ManagerRepository extends JpaRepository<Manager, Long> {
+    @Query("select manager from Manager manager where manager.user.login = ?#{principal.username}")
+    Manager findByUserIsCurrentUser();
+}

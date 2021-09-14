@@ -10,6 +10,8 @@ import com.baamtu.atelier.bank.domain.Advisor;
 import com.baamtu.atelier.bank.domain.User;
 import com.baamtu.atelier.bank.domain.enumeration.Gender;
 import com.baamtu.atelier.bank.repository.AdvisorRepository;
+import com.baamtu.atelier.bank.service.dto.AdvisorDTO;
+import com.baamtu.atelier.bank.service.mapper.AdvisorMapper;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,6 +47,9 @@ class AdvisorResourceIT {
 
     @Autowired
     private AdvisorRepository advisorRepository;
+
+    @Autowired
+    private AdvisorMapper advisorMapper;
 
     @Autowired
     private EntityManager em;
@@ -96,8 +101,9 @@ class AdvisorResourceIT {
     void createAdvisor() throws Exception {
         int databaseSizeBeforeCreate = advisorRepository.findAll().size();
         // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
         restAdvisorMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisor)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisorDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Advisor in the database
@@ -113,12 +119,13 @@ class AdvisorResourceIT {
     void createAdvisorWithExistingId() throws Exception {
         // Create the Advisor with an existing ID
         advisor.setId(1L);
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
 
         int databaseSizeBeforeCreate = advisorRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAdvisorMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisor)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisorDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Advisor in the database
@@ -134,9 +141,10 @@ class AdvisorResourceIT {
         advisor.setTelephone(null);
 
         // Create the Advisor, which fails.
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
 
         restAdvisorMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisor)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisorDTO)))
             .andExpect(status().isBadRequest());
 
         List<Advisor> advisorList = advisorRepository.findAll();
@@ -195,12 +203,13 @@ class AdvisorResourceIT {
         // Disconnect from session so that the updates on updatedAdvisor are not directly saved in db
         em.detach(updatedAdvisor);
         updatedAdvisor.gender(UPDATED_GENDER).telephone(UPDATED_TELEPHONE);
+        AdvisorDTO advisorDTO = advisorMapper.toDto(updatedAdvisor);
 
         restAdvisorMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedAdvisor.getId())
+                put(ENTITY_API_URL_ID, advisorDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedAdvisor))
+                    .content(TestUtil.convertObjectToJsonBytes(advisorDTO))
             )
             .andExpect(status().isOk());
 
@@ -218,12 +227,15 @@ class AdvisorResourceIT {
         int databaseSizeBeforeUpdate = advisorRepository.findAll().size();
         advisor.setId(count.incrementAndGet());
 
+        // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAdvisorMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, advisor.getId())
+                put(ENTITY_API_URL_ID, advisorDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(advisor))
+                    .content(TestUtil.convertObjectToJsonBytes(advisorDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -238,12 +250,15 @@ class AdvisorResourceIT {
         int databaseSizeBeforeUpdate = advisorRepository.findAll().size();
         advisor.setId(count.incrementAndGet());
 
+        // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAdvisorMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(advisor))
+                    .content(TestUtil.convertObjectToJsonBytes(advisorDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -258,9 +273,12 @@ class AdvisorResourceIT {
         int databaseSizeBeforeUpdate = advisorRepository.findAll().size();
         advisor.setId(count.incrementAndGet());
 
+        // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAdvisorMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisor)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(advisorDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Advisor in the database
@@ -334,12 +352,15 @@ class AdvisorResourceIT {
         int databaseSizeBeforeUpdate = advisorRepository.findAll().size();
         advisor.setId(count.incrementAndGet());
 
+        // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAdvisorMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, advisor.getId())
+                patch(ENTITY_API_URL_ID, advisorDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(advisor))
+                    .content(TestUtil.convertObjectToJsonBytes(advisorDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -354,12 +375,15 @@ class AdvisorResourceIT {
         int databaseSizeBeforeUpdate = advisorRepository.findAll().size();
         advisor.setId(count.incrementAndGet());
 
+        // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAdvisorMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(advisor))
+                    .content(TestUtil.convertObjectToJsonBytes(advisorDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -374,9 +398,14 @@ class AdvisorResourceIT {
         int databaseSizeBeforeUpdate = advisorRepository.findAll().size();
         advisor.setId(count.incrementAndGet());
 
+        // Create the Advisor
+        AdvisorDTO advisorDTO = advisorMapper.toDto(advisor);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAdvisorMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(advisor)))
+            .perform(
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(advisorDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Advisor in the database

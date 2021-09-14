@@ -10,6 +10,8 @@ import com.baamtu.atelier.bank.domain.Manager;
 import com.baamtu.atelier.bank.domain.User;
 import com.baamtu.atelier.bank.domain.enumeration.Gender;
 import com.baamtu.atelier.bank.repository.ManagerRepository;
+import com.baamtu.atelier.bank.service.dto.ManagerDTO;
+import com.baamtu.atelier.bank.service.mapper.ManagerMapper;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,6 +47,9 @@ class ManagerResourceIT {
 
     @Autowired
     private ManagerRepository managerRepository;
+
+    @Autowired
+    private ManagerMapper managerMapper;
 
     @Autowired
     private EntityManager em;
@@ -96,8 +101,9 @@ class ManagerResourceIT {
     void createManager() throws Exception {
         int databaseSizeBeforeCreate = managerRepository.findAll().size();
         // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
         restManagerMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manager)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(managerDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Manager in the database
@@ -113,12 +119,13 @@ class ManagerResourceIT {
     void createManagerWithExistingId() throws Exception {
         // Create the Manager with an existing ID
         manager.setId(1L);
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
 
         int databaseSizeBeforeCreate = managerRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restManagerMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manager)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(managerDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Manager in the database
@@ -134,9 +141,10 @@ class ManagerResourceIT {
         manager.setTelephone(null);
 
         // Create the Manager, which fails.
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
 
         restManagerMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manager)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(managerDTO)))
             .andExpect(status().isBadRequest());
 
         List<Manager> managerList = managerRepository.findAll();
@@ -195,12 +203,13 @@ class ManagerResourceIT {
         // Disconnect from session so that the updates on updatedManager are not directly saved in db
         em.detach(updatedManager);
         updatedManager.gender(UPDATED_GENDER).telephone(UPDATED_TELEPHONE);
+        ManagerDTO managerDTO = managerMapper.toDto(updatedManager);
 
         restManagerMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedManager.getId())
+                put(ENTITY_API_URL_ID, managerDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedManager))
+                    .content(TestUtil.convertObjectToJsonBytes(managerDTO))
             )
             .andExpect(status().isOk());
 
@@ -218,12 +227,15 @@ class ManagerResourceIT {
         int databaseSizeBeforeUpdate = managerRepository.findAll().size();
         manager.setId(count.incrementAndGet());
 
+        // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restManagerMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, manager.getId())
+                put(ENTITY_API_URL_ID, managerDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(manager))
+                    .content(TestUtil.convertObjectToJsonBytes(managerDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -238,12 +250,15 @@ class ManagerResourceIT {
         int databaseSizeBeforeUpdate = managerRepository.findAll().size();
         manager.setId(count.incrementAndGet());
 
+        // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManagerMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(manager))
+                    .content(TestUtil.convertObjectToJsonBytes(managerDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -258,9 +273,12 @@ class ManagerResourceIT {
         int databaseSizeBeforeUpdate = managerRepository.findAll().size();
         manager.setId(count.incrementAndGet());
 
+        // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManagerMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manager)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(managerDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Manager in the database
@@ -332,12 +350,15 @@ class ManagerResourceIT {
         int databaseSizeBeforeUpdate = managerRepository.findAll().size();
         manager.setId(count.incrementAndGet());
 
+        // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restManagerMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, manager.getId())
+                patch(ENTITY_API_URL_ID, managerDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(manager))
+                    .content(TestUtil.convertObjectToJsonBytes(managerDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -352,12 +373,15 @@ class ManagerResourceIT {
         int databaseSizeBeforeUpdate = managerRepository.findAll().size();
         manager.setId(count.incrementAndGet());
 
+        // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManagerMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(manager))
+                    .content(TestUtil.convertObjectToJsonBytes(managerDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -372,9 +396,14 @@ class ManagerResourceIT {
         int databaseSizeBeforeUpdate = managerRepository.findAll().size();
         manager.setId(count.incrementAndGet());
 
+        // Create the Manager
+        ManagerDTO managerDTO = managerMapper.toDto(manager);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManagerMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(manager)))
+            .perform(
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(managerDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Manager in the database

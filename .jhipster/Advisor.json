@@ -24,22 +24,22 @@
       "ownerSide": true
     },
     {
-      "relationshipType": "one-to-many",
-      "otherEntityName": "appointment",
-      "otherEntityRelationshipName": "advisor",
-      "relationshipName": "appointments"
-    },
-    {
       "relationshipType": "many-to-one",
       "otherEntityName": "agency",
       "otherEntityRelationshipName": "advisor",
       "relationshipName": "agency"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "appointment",
+      "otherEntityRelationshipName": "advisor",
+      "relationshipName": "appointments"
     }
   ],
   "entityTableName": "advisor",
-  "dto": "no",
+  "dto": "mapstruct",
   "pagination": "no",
-  "service": "no",
+  "service": "serviceClass",
   "jpaMetamodelFiltering": false,
   "fluentMethods": true,
   "readOnly": false,

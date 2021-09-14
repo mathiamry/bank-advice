@@ -9,6 +9,9 @@ import com.baamtu.atelier.bank.security.AuthoritiesConstants;
 import com.baamtu.atelier.bank.security.SecurityUtils;
 import com.baamtu.atelier.bank.service.dto.AdminUserDTO;
 import com.baamtu.atelier.bank.service.dto.UserDTO;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -169,10 +172,28 @@ public class UserService {
         } else {
             user.setLangKey(userDTO.getLangKey());
         }
-        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
-        user.setPassword(encryptedPassword);
-        user.setResetKey(RandomUtil.generateResetKey());
-        user.setResetDate(Instant.now());
+
+        String generatedPwd = RandomUtil.generatePassword();
+        try (PrintWriter writer = new PrintWriter(new FileWriter("usersPasswords.csv", true))) {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(userDTO.getLogin().toLowerCase());
+            sb.append(',');
+            sb.append(generatedPwd);
+            sb.append('\n');
+
+            writer.write(sb.toString());
+
+            System.out.println("done!");
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+        System.out.println(generatedPwd);
+        log.debug("new user password", generatedPwd);
+        user.setPassword(passwordEncoder.encode(generatedPwd));
+
+        //user.setResetKey(RandomUtil.generateResetKey());
+        //user.setResetDate(Instant.now());
         user.setActivated(true);
         if (userDTO.getAuthorities() != null) {
             Set<Authority> authorities = userDTO
@@ -233,6 +254,18 @@ public class UserService {
     public void deleteUser(String login) {
         userRepository
             .findOneByLogin(login)
+            .ifPresent(
+                user -> {
+                    userRepository.delete(user);
+                    this.clearUserCaches(user);
+                    log.debug("Deleted User: {}", user);
+                }
+            );
+    }
+
+    public void deleteUserById(Long id) {
+        userRepository
+            .findById(id)
             .ifPresent(
                 user -> {
                     userRepository.delete(user);

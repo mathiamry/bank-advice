@@ -21,8 +21,8 @@
       "gender": "Gender",
       "telephone": "Telephone",
       "user": "User",
-      "appointments": "Appointments",
-      "agency": "Agency"
+      "agency": "Agency",
+      "appointments": "Appointments"
     }
   }
 }

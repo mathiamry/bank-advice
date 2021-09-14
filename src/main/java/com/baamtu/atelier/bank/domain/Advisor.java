@@ -39,13 +39,13 @@ public class Advisor implements Serializable {
     @JoinColumn(unique = true)
     private User user;
 
+    @ManyToOne
+    private Agency agency;
+
     @OneToMany(mappedBy = "advisor")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "manager", "advisor" }, allowSetters = true)
     private Set<Appointment> appointments = new HashSet<>();
-
-    @ManyToOne
-    private Agency agency;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
@@ -100,6 +100,19 @@ public class Advisor implements Serializable {
         this.user = user;
     }
 
+    public Agency getAgency() {
+        return this.agency;
+    }
+
+    public Advisor agency(Agency agency) {
+        this.setAgency(agency);
+        return this;
+    }
+
+    public void setAgency(Agency agency) {
+        this.agency = agency;
+    }
+
     public Set<Appointment> getAppointments() {
         return this.appointments;
     }
@@ -129,19 +142,6 @@ public class Advisor implements Serializable {
             appointments.forEach(i -> i.setAdvisor(this));
         }
         this.appointments = appointments;
-    }
-
-    public Agency getAgency() {
-        return this.agency;
-    }
-
-    public Advisor agency(Agency agency) {
-        this.setAgency(agency);
-        return this;
-    }
-
-    public void setAgency(Agency agency) {
-        this.agency = agency;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
